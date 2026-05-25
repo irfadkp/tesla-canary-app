@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Ford Vehicle Management - Blue/Green Deployment Demo" />
+    <title>Ford Vehicle Management</title>
+    
+    <!-- Instana RUM -->
+    <script>
+      (function(s,t,a,n){s[t]||(s[t]=a,n=s[a]=function(){n.q.push(arguments)},
+      n.q=[],n.v=2,n.l=1*new Date)})(window,"InstanaEumObject","ineum");
+      
+      ineum('reportingUrl', '%REACT_APP_INSTANA_URL%');
+      ineum('key', '%REACT_APP_INSTANA_KEY%');
+      ineum('trackSessions');
+      
+      console.log('Instana RUM script loaded');
+    </script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

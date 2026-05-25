@@ -1,0 +1,97 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: ferrari-backend
+  labels:
+    app: ferrari-backend
+    component: api
+spec:
+  replicas: 3
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: ferrari-backend
+  template:
+    metadata:
+      labels:
+        app: ferrari-backend
+        app.kubernetes.io/name: ferrari-app
+        app.kubernetes.io/part-of: ferrari-bluegreen
+        component: api
+    spec:
+      containers:
+      - name: backend
+        image: ferrari-backend:1.0.0
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-config
+              key: database.host
+        - name: DATABASE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-config
+              key: database.port
+        - name: DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-config
+              key: database.name
+        - name: DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: database.user
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: database.password
+        - name: INSTANA_AGENT_HOST
+          value: "instana-agent.instana-agent"
+        - name: INSTANA_AGENT_PORT
+          value: "42699"
+        - name: INSTANA_SERVICE_NAME
+          value: "ferrari-backend"
+        - name: INSTANA_ZONE
+          value: "ferrari-canary"
+        - name: INSTANA_TAGS
+          value: "app=ferrari,deployment=canary,component=backend"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 3
+  strategy:
+    canary:
+      steps:
+      - setWeight: 20
+      - pause: {duration: 30s}
+      - setWeight: 40
+      - pause: {duration: 30s}
+      - setWeight: 60
+      - pause: {duration: 30s}
+      - setWeight: 80
+      - pause: {duration: 30s}
+      canaryService: ferrari-backend-canary
+      stableService: ferrari-backend-stable

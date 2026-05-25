@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ferrari-frontend
+  labels:
+    app: ferrari-frontend
+    component: ui
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ferrari-frontend
+  template:
+    metadata:
+      labels:
+        app: ferrari-frontend
+        component: ui
+    spec:
+      containers:
+      - name: frontend
+        image: ferrari-frontend:1.0.0
+        ports:
+        - containerPort: 80
+          name: http
+        env:
+        - name: REACT_APP_API_URL
+          value: "http://ferrari-backend-stable:8080"
+        - name: REACT_APP_INSTANA_KEY
+          value: "your-instana-key"
+        - name: REACT_APP_INSTANA_URL
+          value: "https://eum.instana.io"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3

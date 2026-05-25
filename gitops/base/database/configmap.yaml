@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  labels:
+    app: postgres
+    component: database
+data:
+  database.name: "ferraridb"
+  database.host: "postgres"
+  database.port: "5432"

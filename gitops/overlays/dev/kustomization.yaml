@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ferrari-shop-dev
+
+resources:
+  - ../../base
+
+images:
+  - name: ferrari-backend
+    newName: ghcr.io/irfadkp/ferrari-canary-app/backend
+    newTag: "1.0.0"
+  - name: ferrari-frontend
+    newName: ghcr.io/irfadkp/ferrari-canary-app/frontend
+    newTag: "1.0.1"
+
+patches:
+  - target:
+      kind: Ingress
+      name: ferrari-ingress
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: ferrari-shop.local
