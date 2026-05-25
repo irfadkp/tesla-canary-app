@@ -13,7 +13,7 @@ spec:
     path: gitops/overlays/dev
   destination:
     server: https://kubernetes.default.svc
-    namespace: ferrari-shop-dev
+    namespace: tesla-shop-dev
   syncPolicy:
     automated:
       prune: true

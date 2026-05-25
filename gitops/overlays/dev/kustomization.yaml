@@ -1,17 +1,17 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: ferrari-shop-dev
+namespace: tesla-shop-dev
 
 resources:
   - ../../base
 
 images:
   - name: ferrari-backend
-    newName: ghcr.io/irfadkp/ferrari-canary-app/backend
+    newName: ghcr.io/irfadkp/tesla-canary-app/backend
     newTag: "v1.0.17"
   - name: ferrari-frontend
-    newName: ghcr.io/irfadkp/ferrari-canary-app/frontend
+    newName: ghcr.io/irfadkp/tesla-canary-app/frontend
     newTag: "v1.0.17"
 
 patches:
@@ -21,4 +21,4 @@ patches:
     patch: |-
       - op: replace
         path: /spec/rules/0/host
-        value: ferrari-shop.local
+        value: tesla-shop.local
