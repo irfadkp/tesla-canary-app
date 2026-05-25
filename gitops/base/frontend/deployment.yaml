@@ -1,30 +1,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ferrari-frontend
+  name: tesla-frontend
   labels:
-    app: ferrari-frontend
+    app: tesla-frontend
     component: ui
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: ferrari-frontend
+      app: tesla-frontend
   template:
     metadata:
       labels:
-        app: ferrari-frontend
+        app: tesla-frontend
         component: ui
     spec:
       containers:
       - name: frontend
-        image: ferrari-frontend:1.0.0
+        image: tesla-frontend:1.0.0
         ports:
         - containerPort: 80
           name: http
         env:
         - name: REACT_APP_API_URL
-          value: "http://ferrari-backend-stable:8080"
+          value: "http://tesla-backend-stable:8080"
         - name: REACT_APP_INSTANA_KEY
           value: "your-instana-key"
         - name: REACT_APP_INSTANA_URL

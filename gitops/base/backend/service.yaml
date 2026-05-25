@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ferrari-backend
+  name: tesla-backend
   labels:
-    app: ferrari-backend
+    app: tesla-backend
     component: api
 spec:
   type: ClusterIP
@@ -13,14 +13,14 @@ spec:
     protocol: TCP
     name: http
   selector:
-    app: ferrari-backend
+    app: tesla-backend
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: ferrari-backend-stable
+  name: tesla-backend-stable
   labels:
-    app: ferrari-backend
+    app: tesla-backend
     component: api
     service-type: stable
 spec:
@@ -31,14 +31,14 @@ spec:
     protocol: TCP
     name: http
   selector:
-    app: ferrari-backend
+    app: tesla-backend
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: ferrari-backend-canary
+  name: tesla-backend-canary
   labels:
-    app: ferrari-backend
+    app: tesla-backend
     component: api
     service-type: canary
 spec:
@@ -49,4 +49,4 @@ spec:
     protocol: TCP
     name: http
   selector:
-    app: ferrari-backend
+    app: tesla-backend

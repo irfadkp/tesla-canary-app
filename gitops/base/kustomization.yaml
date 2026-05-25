@@ -13,5 +13,5 @@ resources:
   - frontend/ingress.yaml
 
 commonLabels:
-  app.kubernetes.io/name: ferrari-app
-  app.kubernetes.io/part-of: ferrari-bluegreen
+  app.kubernetes.io/name: tesla-app
+  app.kubernetes.io/part-of: tesla-bluegreen

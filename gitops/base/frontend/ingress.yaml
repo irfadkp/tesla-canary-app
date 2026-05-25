@@ -1,28 +1,28 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ferrari-ingress
+  name: tesla-ingress
   labels:
-    app: ferrari
+    app: tesla
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
   ingressClassName: traefik
   rules:
-  - host: ferrari-shop.local
+  - host: tesla-shop.local
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: ferrari-frontend
+            name: tesla-frontend
             port:
               number: 80
       - path: /api
         pathType: Prefix
         backend:
           service:
-            name: ferrari-backend-stable
+            name: tesla-backend-stable
             port:
               number: 8080

@@ -1,27 +1,27 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: ferrari-backend
+  name: tesla-backend
   labels:
-    app: ferrari-backend
+    app: tesla-backend
     component: api
 spec:
   replicas: 3
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app: ferrari-backend
+      app: tesla-backend
   template:
     metadata:
       labels:
-        app: ferrari-backend
-        app.kubernetes.io/name: ferrari-app
-        app.kubernetes.io/part-of: ferrari-bluegreen
+        app: tesla-backend
+        app.kubernetes.io/name: tesla-app
+        app.kubernetes.io/part-of: tesla-canary
         component: api
     spec:
       containers:
       - name: backend
-        image: ferrari-backend:1.0.0
+        image: tesla-backend:1.0.0
         ports:
         - containerPort: 8080
           name: http
@@ -56,11 +56,11 @@ spec:
         - name: INSTANA_AGENT_PORT
           value: "42699"
         - name: INSTANA_SERVICE_NAME
-          value: "ferrari-backend"
+          value: "tesla-backend"
         - name: INSTANA_ZONE
-          value: "ferrari-canary"
+          value: "tesla-canary"
         - name: INSTANA_TAGS
-          value: "app=ferrari,deployment=canary,component=backend"
+          value: "app=tesla,deployment=canary,component=backend"
         resources:
           requests:
             memory: "512Mi"
@@ -93,5 +93,5 @@ spec:
       - pause: {duration: 30s}
       - setWeight: 80
       - pause: {duration: 30s}
-      canaryService: ferrari-backend-canary
-      stableService: ferrari-backend-stable
+      canaryService: tesla-backend-canary
+      stableService: tesla-backend-stable

@@ -6,6 +6,6 @@ metadata:
     app: postgres
     component: database
 data:
-  database.name: "ferraridb"
+  database.name: "tesladb"
   database.host: "postgres"
   database.port: "5432"
