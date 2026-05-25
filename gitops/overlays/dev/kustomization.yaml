@@ -9,10 +9,10 @@ resources:
 images:
   - name: ferrari-backend
     newName: ghcr.io/irfadkp/ferrari-canary-app/backend
-    newTag: "v1.0.15"
+    newTag: "v1.0.16"
   - name: ferrari-frontend
     newName: ghcr.io/irfadkp/ferrari-canary-app/frontend
-    newTag: "v1.0.15"
+    newTag: "v1.0.16"
 
 patches:
   - target:
