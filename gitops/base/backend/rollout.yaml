@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: tesla-backend:1.0.0
+        image: tesla-backend
         ports:
         - containerPort: 8080
           name: http
