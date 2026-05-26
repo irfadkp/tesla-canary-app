@@ -14,4 +14,4 @@ resources:
 
 commonLabels:
   app.kubernetes.io/name: tesla-app
-  app.kubernetes.io/part-of: tesla-bluegreen
+  app.kubernetes.io/part-of: tesla-canary
