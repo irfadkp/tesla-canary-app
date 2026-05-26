@@ -21,6 +21,8 @@ metadata:
   name: tesla-backend-stable
   labels:
     app: tesla-backend
+    app.kubernetes.io/name: tesla-app
+    app.kubernetes.io/part-of: tesla-canary
     component: api
     service-type: stable
 spec:
@@ -39,6 +41,8 @@ metadata:
   name: tesla-backend-canary
   labels:
     app: tesla-backend
+    app.kubernetes.io/name: tesla-app
+    app.kubernetes.io/part-of: tesla-canary
     component: api
     service-type: canary
 spec:
