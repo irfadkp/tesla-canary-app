@@ -9,10 +9,10 @@ resources:
 images:
   - name: tesla-backend
     newName: ghcr.io/irfadkp/tesla-canary-app/backend
-    newTag: "1.0.0"
+    newTag: "v999.999.999"
   - name: tesla-frontend
     newName: ghcr.io/irfadkp/tesla-canary-app/frontend
-    newTag: "1.0.2"
+    newTag: "v999.999.999"
 
 patches:
   - target:
