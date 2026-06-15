@@ -9,6 +9,7 @@ metadata:
     component: monitoring
 spec:
   replicas: 1
+  progressDeadlineSeconds: 60
   selector:
     matchLabels:
       app: tesla-health-monitor
