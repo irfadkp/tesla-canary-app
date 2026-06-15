@@ -22,3 +22,16 @@ patches:
       - op: replace
         path: /spec/rules/0/host
         value: tesla-shop.local
+- target:
+    kind: Rollout
+    name: tesla-backend
+  patch: |-
+    - op: add
+      path: /spec/template/spec/containers/0/readinessProbe
+      value:
+        httpGet:
+          path: /health/nonexistent
+          port: 8080
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        failureThreshold: 1
