@@ -84,15 +84,10 @@ spec:
           timeoutSeconds: 3
   strategy:
     canary:
-      analysis:
-        templates:
-        - templateName: tesla-backend-analysis
-        startingStep: 1
       steps:
       - setWeight: 20
-      - pause: {duration: 10s}
-      - analysis:
-          templates:
-          - templateName: tesla-backend-analysis
+      - pause: {duration: 30s}
+      - setWeight: 50
+      - pause: {duration: 30s}
       canaryService: tesla-backend-canary
       stableService: tesla-backend-stable
