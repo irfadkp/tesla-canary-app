@@ -14,6 +14,9 @@ images:
     newName: ghcr.io/irfadkp/tesla-canary-app/frontend
     newTag: "1.0.2"
 
+  - target:
+      name: tesla-ingress
+      - op: replace
 patches:
   - target:
       kind: Ingress
@@ -22,3 +25,11 @@ patches:
       - op: replace
         path: /spec/rules/0/host
         value: tesla-shop.local
+  - target:
+      kind: Rollout
+      name: tesla-backend
+    patch: |-
+      - op: add
+        path: /spec/strategy/canary/steps
+        value:
+          - pause: {}
