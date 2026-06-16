@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tesla-health-monitor
+  labels:
+    app: tesla-health-monitor
+    app.kubernetes.io/name: tesla-app
+    app.kubernetes.io/part-of: tesla-canary
+    component: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tesla-health-monitor
+  template:
+    metadata:
+      labels:
+        app: tesla-health-monitor
+        app.kubernetes.io/name: tesla-app
+        app.kubernetes.io/part-of: tesla-canary
+        component: monitoring
+    spec:
+      containers:
+      - name: monitor
+        image: ghcr.io/irfadkp/tesla-canary-app/health-monitor:nonexistent
+        imagePullPolicy: Always
+        command: ["/bin/sh", "-c", "echo 'Health monitor for ArgoCD status'; sleep infinity"]

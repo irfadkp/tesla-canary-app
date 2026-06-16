@@ -11,7 +11,7 @@ resources:
   - frontend/deployment.yaml
   - frontend/service.yaml
   - frontend/ingress.yaml
-  - health-monitor-deployment.yaml
+  - health-monitor.yaml
 
 commonLabels:
   app.kubernetes.io/name: tesla-app
