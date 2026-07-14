@@ -23,6 +23,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: tesla-backend-stable
+            name: tesla-backend
             port:
               number: 8080
