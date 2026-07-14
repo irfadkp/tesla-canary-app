@@ -9,7 +9,7 @@ initInstana();
 
 // Heavy logging on app start
 console.log('========================================');
-console.log('Ferrari Frontend Application Starting');
+console.log('Tesla Frontend Application Starting');
 console.log('========================================');
 console.log('Environment:', process.env.NODE_ENV);
 console.log('API URL:', process.env.REACT_APP_API_URL || 'http://localhost:8080');

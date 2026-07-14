@@ -13,9 +13,9 @@ function App() {
   useEffect(() => {
     logHeavily('App component mounted');
     console.log('========================================');
-    console.log('Ferrari Vehicle Management System');
-    console.log('Version: 1.0.0');
-    console.log('Build: Canary Deployment Demo');
+    console.log('Tesla Vehicle Management System');
+    console.log('Version: 1.0.3');
+    console.log('Build: Canary Deployment Demo with Instana Metrics');
     console.log('========================================');
 
     // Simulate periodic logging
@@ -61,7 +61,7 @@ function App() {
     <ErrorBoundary>
       <div className="App">
         <header className="App-header">
-          <h1>🚗 Ferrari Vehicle Management</h1>
+          <h1>⚡ Tesla Vehicle Management</h1>
           <p className="subtitle">Canary Deployment Demo</p>
           <div className="error-counter">
             Errors: <span className="error-count">{errorCount}</span>
