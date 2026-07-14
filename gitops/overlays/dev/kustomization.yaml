@@ -12,7 +12,7 @@ images:
     newTag: "1.0.6"
   - name: tesla-frontend
     newName: ghcr.io/irfadkp/tesla-canary-app/frontend
-    newTag: "1.0.6"
+    newTag: "1.0.3"
 
 patches:
   - target:
