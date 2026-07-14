@@ -88,7 +88,21 @@ spec:
       steps:
       - setWeight: 20
       - pause: {duration: 30s}
+      - analysis:
+          templates:
+            - templateName: instana-canary-analysis
+          args:
+            - name: pod-template-hash
+              valueFrom:
+                podTemplateHashValue: Latest
       - setWeight: 50
       - pause: {duration: 30s}
+      - analysis:
+          templates:
+            - templateName: instana-canary-analysis
+          args:
+            - name: pod-template-hash
+              valueFrom:
+                podTemplateHashValue: Latest
       canaryService: tesla-backend-canary
       stableService: tesla-backend-stable
