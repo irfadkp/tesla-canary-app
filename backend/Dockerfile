@@ -23,7 +23,7 @@ WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
 # Copy Instana Java agent from Maven dependencies
-COPY --from=build /root/.m2/repository/com/instana/instana-agent-attach-jvm/1.0.50/instana-agent-attach-jvm-1.0.50.jar /opt/instana-agent.jar
+COPY --from=build /root/.m2/repository/com/instana/javaagent-attach/1.0.11/javaagent-attach-1.0.11.jar /opt/instana-agent.jar
 
 # Expose port
 EXPOSE 8080
