@@ -24,7 +24,7 @@ spec:
           name: http
         env:
         - name: REACT_APP_API_URL
-          value: "http://tesla-backend-stable:8080"
+          value: "http://tesla-backend:8080"
         - name: REACT_APP_INSTANA_KEY
           value: "your-instana-key"
         - name: REACT_APP_INSTANA_URL
