@@ -16,8 +16,8 @@ FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-# Download Instana Java agent
-RUN wget -O /app/instana-agent.jar https://github.com/instana/instana-agent-java/releases/download/v1.2.0/instana-agent-1.2.0.jar
+# Download Instana Java agent from Maven Central
+RUN wget -O /app/instana-agent.jar https://repo1.maven.org/maven2/com/instana/instana-javaagent/1.2.0/instana-javaagent-1.2.0.jar
 
 # Copy the built jar from build stage (includes Instana SDK)
 COPY --from=build /app/target/*.jar app.jar
