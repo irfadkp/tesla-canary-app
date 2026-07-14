@@ -15,7 +15,7 @@ spec:
       provider:
         plugin:
           instana/metrics:
-            host: https://ibmdevsandbox-instanaibm.instana.io
+            host: https://release-instana.instana.rocks
             apiTokenEnv: INSTANA_API_TOKEN
             metric: errors
             aggregation: MEAN
@@ -45,7 +45,7 @@ spec:
       provider:
         plugin:
           instana/metrics:
-            host: https://ibmdevsandbox-instanaibm.instana.io
+            host: https://release-instana.instana.rocks
             apiTokenEnv: INSTANA_API_TOKEN
             metric: latency
             aggregation: P90
