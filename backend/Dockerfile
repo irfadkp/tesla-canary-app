@@ -16,11 +16,16 @@ FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-# Download Instana Java agent from Maven Central
-RUN wget -O /app/instana-agent.jar https://repo1.maven.org/maven2/com/instana/instana-javaagent/1.2.0/instana-javaagent-1.2.0.jar
+# Install curl for downloading Instana agent
+RUN apk add --no-cache curl
 
 # Copy the built jar from build stage (includes Instana SDK)
 COPY --from=build /app/target/*.jar app.jar
+
+# Download Instana Java agent from agent service at runtime
+RUN curl -o /opt/instana-agent.jar \
+  http://instana-agent.instana-agent:42699/com.instana.agent-dynamic.jar || \
+  echo "Warning: Instana agent download failed, will run without instrumentation"
 
 # Expose port
 EXPOSE 8080
@@ -31,7 +36,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
 
 # Run application with Instana Java agent for automatic instrumentation
 ENTRYPOINT ["java", \
-  "-javaagent:/app/instana-agent.jar", \
+  "-javaagent:/opt/instana-agent.jar", \
   "-Xms256m", \
   "-Xmx512m", \
   "-XX:+UseG1GC", \
