@@ -26,14 +26,14 @@ public class InstanaTestController {
         log.error("INSTANA TEST: Generating {} error - {}", statusCode, message);
         
         // Mark span as erroneous using Instana SDK
-        SpanSupport.annotate(Span.Type.ENTRY, "error", true);
-        SpanSupport.annotate(Span.Type.ENTRY, "http.status", statusCode);
+        SpanSupport.annotate(Span.Type.ENTRY, "error", "true");
+        SpanSupport.annotate(Span.Type.ENTRY, "http.status", String.valueOf(statusCode));
         SpanSupport.annotate(Span.Type.ENTRY, "error.message", message);
         
         // Throw exception for 5xx errors
         if (statusCode >= 500) {
             RuntimeException error = new RuntimeException("INSTANA TEST ERROR: " + message);
-            SpanSupport.annotate(Span.Type.ENTRY, "error.object", error);
+            SpanSupport.annotate(Span.Type.ENTRY, "error.object", error.toString());
             throw error;
         }
         
