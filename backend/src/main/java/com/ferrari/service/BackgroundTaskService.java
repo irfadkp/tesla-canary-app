@@ -47,25 +47,12 @@ public class BackgroundTaskService {
         log.info("Completed {} external API calls", callCount);
     }
 
-    // Run every 20 seconds - Simulate random errors
-    @Scheduled(fixedRate = 20000)
-    public void simulateRandomErrors() {
-        log.info("SCHEDULED TASK: Error simulation check");
-        
-        // 40% chance of generating an error
-        if (errorGenerator.shouldFail(40)) {
-            log.error("SCHEDULED ERROR: Simulated background task failure");
-            log.error("Error code: ERR_{}", ThreadLocalRandom.current().nextInt(1000, 9999));
-            log.error("Severity: {}", ThreadLocalRandom.current().nextBoolean() ? "HIGH" : "MEDIUM");
-            
-            // Log fake stack trace
-            log.error("  at com.ferrari.service.BackgroundTaskService.simulateRandomErrors");
-            log.error("  at org.springframework.scheduling.support.ScheduledMethodRunnable.run");
-            log.error("  at java.base/java.util.concurrent.Executors$RunnableAdapter.call");
-        } else {
-            log.info("Background task health check: OK");
-        }
-    }
+    // DISABLED: Automatic error generation - only use Error Simulator UI
+    // @Scheduled(fixedRate = 20000)
+    // public void simulateRandomErrors() {
+    //     log.info("SCHEDULED TASK: Error simulation check");
+    //     log.info("Background task health check: OK");
+    // }
 
     // Run every 30 seconds - Database simulation logs
     @Scheduled(fixedRate = 30000)

@@ -29,10 +29,10 @@ public class VehicleController {
     public ResponseEntity<?> getAllVehicles() {
         logGenerator.logHeavily("GET /api/vehicles - Fetching all vehicles");
         
-        // 30% chance of error
-        if (errorGenerator.shouldFail(30)) {
-            return errorGenerator.generateRandomError("Failed to fetch vehicles");
-        }
+        // DISABLED: Automatic error generation - only use Error Simulator UI
+        // if (errorGenerator.shouldFail(30)) {
+        //     return errorGenerator.generateRandomError("Failed to fetch vehicles");
+        // }
 
         // Make external API call
         externalApiService.callExternalApi();
@@ -53,10 +53,10 @@ public class VehicleController {
     public ResponseEntity<?> getVehicleById(@PathVariable String id) {
         logGenerator.logHeavily("GET /api/vehicles/" + id + " - Fetching vehicle details");
         
-        // 25% chance of error
-        if (errorGenerator.shouldFail(25)) {
-            return errorGenerator.generateRandomError("Failed to fetch vehicle " + id);
-        }
+        // DISABLED: Automatic error generation - only use Error Simulator UI
+        // if (errorGenerator.shouldFail(25)) {
+        //     return errorGenerator.generateRandomError("Failed to fetch vehicle " + id);
+        // }
 
         // Simulate slow query
         try {
@@ -76,10 +76,10 @@ public class VehicleController {
     public ResponseEntity<?> createVehicle(@RequestBody Map<String, Object> vehicleData) {
         logGenerator.logHeavily("POST /api/vehicles - Creating new vehicle: " + vehicleData);
         
-        // 35% chance of error on create
-        if (errorGenerator.shouldFail(35)) {
-            return errorGenerator.generateRandomError("Failed to create vehicle");
-        }
+        // DISABLED: Automatic error generation - only use Error Simulator UI
+        // if (errorGenerator.shouldFail(35)) {
+        //     return errorGenerator.generateRandomError("Failed to create vehicle");
+        // }
 
         // Make external API call
         externalApiService.callExternalApi();
@@ -95,10 +95,10 @@ public class VehicleController {
     public ResponseEntity<?> updateVehicle(@PathVariable String id, @RequestBody Map<String, Object> vehicleData) {
         logGenerator.logHeavily("PUT /api/vehicles/" + id + " - Updating vehicle");
         
-        // 40% chance of error on update
-        if (errorGenerator.shouldFail(40)) {
-            return errorGenerator.generateRandomError("Failed to update vehicle " + id);
-        }
+        // DISABLED: Automatic error generation - only use Error Simulator UI
+        // if (errorGenerator.shouldFail(40)) {
+        //     return errorGenerator.generateRandomError("Failed to update vehicle " + id);
+        // }
 
         vehicleData.put("id", id);
         vehicleData.put("updatedAt", new Date());
@@ -111,10 +111,10 @@ public class VehicleController {
     public ResponseEntity<?> deleteVehicle(@PathVariable String id) {
         logGenerator.logHeavily("DELETE /api/vehicles/" + id + " - Deleting vehicle");
         
-        // 20% chance of error on delete
-        if (errorGenerator.shouldFail(20)) {
-            return errorGenerator.generateRandomError("Failed to delete vehicle " + id);
-        }
+        // DISABLED: Automatic error generation - only use Error Simulator UI
+        // if (errorGenerator.shouldFail(20)) {
+        //     return errorGenerator.generateRandomError("Failed to delete vehicle " + id);
+        // }
 
         logGenerator.logSuccess("Successfully deleted vehicle " + id);
         return ResponseEntity.noContent().build();
@@ -125,10 +125,10 @@ public class VehicleController {
                                            @RequestParam(required = false) String color) {
         logGenerator.logHeavily("GET /api/vehicles/search - Searching vehicles: type=" + type + ", color=" + color);
         
-        // 28% chance of error
-        if (errorGenerator.shouldFail(28)) {
-            return errorGenerator.generateRandomError("Search failed");
-        }
+        // DISABLED: Automatic error generation - only use Error Simulator UI
+        // if (errorGenerator.shouldFail(28)) {
+        //     return errorGenerator.generateRandomError("Search failed");
+        // }
 
         // Make multiple external API calls
         externalApiService.callExternalApi();
@@ -147,10 +147,10 @@ public class VehicleController {
     public ResponseEntity<?> getStatistics() {
         logGenerator.logHeavily("GET /api/vehicles/stats - Fetching statistics");
         
-        // 15% chance of error
-        if (errorGenerator.shouldFail(15)) {
-            return errorGenerator.generateRandomError("Failed to fetch statistics");
-        }
+        // DISABLED: Automatic error generation - only use Error Simulator UI
+        // if (errorGenerator.shouldFail(15)) {
+        //     return errorGenerator.generateRandomError("Failed to fetch statistics");
+        // }
 
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalVehicles", ThreadLocalRandom.current().nextInt(100, 1000));
