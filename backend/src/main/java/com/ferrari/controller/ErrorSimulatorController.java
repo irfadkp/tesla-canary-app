@@ -30,7 +30,12 @@ public class ErrorSimulatorController {
         log.error("ERROR SIMULATOR: Generating {} error - {}", statusCode, message);
         log.error("Stack trace simulation for Instana tracing");
         
-        // Create error response
+        // Throw actual exception for 5xx errors so Instana detects them as failures
+        if (statusCode >= 500) {
+            throw new RuntimeException("ERROR SIMULATOR: " + message + " (Status: " + statusCode + ")");
+        }
+        
+        // For 4xx errors, return error response
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("error", message);
         errorResponse.put("status", statusCode);
