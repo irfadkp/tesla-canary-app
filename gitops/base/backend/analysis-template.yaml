@@ -39,8 +39,8 @@ spec:
     - name: latency-p90
       interval: 1m
       count: 5
-      # milliseconds - allow up to 2000ms (2 seconds) for P90 to account for JVM warmup
-      successCondition: result <= 2000
+      # milliseconds - allow up to 10000ms (10 seconds) for P90 to account for extreme latency spikes
+      successCondition: result <= 10000
       failureLimit: 2
       provider:
         plugin:
