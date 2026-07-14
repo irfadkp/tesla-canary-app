@@ -3,6 +3,7 @@ import './App.css';
 import VehicleList from './components/VehicleList';
 import VehicleForm from './components/VehicleForm';
 import ErrorBoundary from './components/ErrorBoundary';
+import ErrorSimulatorPage from './components/ErrorSimulatorPage';
 import { logHeavily, logError, logSuccess } from './utils/logger';
 
 function App() {
@@ -86,11 +87,18 @@ function App() {
           >
             Statistics
           </button>
+          <button 
+            className={activeTab === 'simulator' ? 'active' : ''}
+            onClick={() => handleTabChange('simulator')}
+          >
+            Error Simulator
+          </button>
         </nav>
 
         <main className="App-main">
           {activeTab === 'list' && <VehicleList onError={handleError} />}
           {activeTab === 'add' && <VehicleForm onError={handleError} />}
+          {activeTab === 'simulator' && <ErrorSimulatorPage />}
           {activeTab === 'stats' && (
             <div className="stats-container">
               <h2>Application Statistics</h2>
