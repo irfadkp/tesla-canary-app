@@ -7,7 +7,7 @@
 
     <groupId>com.ferrari</groupId>
     <artifactId>ferrari-backend</artifactId>
-    <version>1.0.7</version>
+    <version>1.0.4</version>
     <packaging>jar</packaging>
 
     <name>Ferrari Backend Service</name>
@@ -24,14 +24,6 @@
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
-    <repositories>
-        <repository>
-            <id>instana-shared</id>
-            <name>Instana Shared Repository</name>
-            <url>https://artifact-public.instana.io/artifactory/shared</url>
-        </repository>
-    </repositories>
 
     <dependencies>
         <!-- Spring Boot Web -->
@@ -74,13 +66,8 @@
             <version>1.2.0</version>
         </dependency>
 
-        <!-- Instana Java Agent -->
-        <dependency>
-            <groupId>com.instana</groupId>
-            <artifactId>instana-agent-attach-jvm</artifactId>
-            <version>1.0.50</version>
-            <scope>provided</scope>
-        </dependency>
+        <!-- Instana APM - Using Java agent instead of Maven dependency -->
+        <!-- The Instana agent is injected at runtime via -javaagent -->
 
         <!-- Logback for structured logging -->
         <dependency>

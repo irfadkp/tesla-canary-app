@@ -19,9 +19,6 @@ WORKDIR /app
 # Copy the built jar from build stage (includes Instana SDK)
 COPY --from=build /app/target/*.jar app.jar
 
-# Copy Instana agent JAR from Maven dependencies
-COPY --from=build /root/.m2/repository/com/instana/instana-agent-attach-jvm/1.0.50/instana-agent-attach-jvm-1.0.50.jar /opt/instana-agent.jar
-
 # Expose port
 EXPOSE 8080
 
@@ -29,13 +26,12 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health/live || exit 1
 
-# Run application with Instana Java agent for automatic instrumentation
+# Run application (Instana SDK provides tracing via dependency)
 ENTRYPOINT ["java", \
-  "-javaagent:/opt/instana-agent.jar", \
   "-Xms256m", \
   "-Xmx512m", \
   "-XX:+UseG1GC", \
   "-XX:MaxGCPauseMillis=200", \
-  "-Dinstana.service.name=${INSTANA_SERVICE_NAME:-tesla-backend}", \
+  "-Dinstana.service.name=${INSTANA_SERVICE_NAME:-ferrari-backend}", \
   "-jar", \
   "app.jar"]
