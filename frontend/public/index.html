@@ -6,17 +6,25 @@
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="Tesla Vehicle Management - Canary Deployment with Instana Metrics" />
     <title>Tesla Vehicle Management</title>
-    
-    <!-- Instana RUM -->
+
+    <!-- Instana RUM — Step 1: load the EUM agent script first.
+         %REACT_APP_INSTANA_URL% is substituted by Create React App at build time
+         from the REACT_APP_INSTANA_URL env var (set in .env or CI).
+         Without this <script src> the window.ineum stub below is never backed
+         by the real agent and no page/XHR errors reach Instana. -->
+    <script defer src="%REACT_APP_INSTANA_URL%/eum.min.js" crossorigin="anonymous"></script>
+
+    <!-- Instana RUM — Step 2: stub + configure before the agent script executes -->
     <script>
       (function(s,t,a,n){s[t]||(s[t]=a,n=s[a]=function(){n.q.push(arguments)},
       n.q=[],n.v=2,n.l=1*new Date)})(window,"InstanaEumObject","ineum");
-      
+
       ineum('reportingUrl', '%REACT_APP_INSTANA_URL%');
       ineum('key', '%REACT_APP_INSTANA_KEY%');
       ineum('trackSessions');
-      
-      console.log('Instana RUM script loaded');
+      ineum('captureHeaders', ['x-request-id', 'x-canary']);
+
+      console.log('Instana RUM configured — key: %REACT_APP_INSTANA_KEY%');
     </script>
   </head>
   <body>
