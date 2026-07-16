@@ -20,6 +20,31 @@ spec:
         app.kubernetes.io/part-of: tesla-canary
         component: api
     spec:
+      # Init container copies the Instana Spring Boot javaagent jar from the
+      # node-local agent repo (hostPath) into a shared emptyDir volume so the
+      # main container can attach it with -javaagent at startup without
+      # needing internet access or credentials at image build time.
+      initContainers:
+      - name: instana-agent-init
+        image: busybox:1.36
+        command:
+          - sh
+          - -c
+          - |
+            SRC=/opt/instana/agent/data/repo/com/instana/sensor-springboot-javaagent/1.1.49/sensor-springboot-javaagent-1.1.49.jar
+            DST=/instana/instana-java-agent.jar
+            if [ -f "$SRC" ]; then
+              cp "$SRC" "$DST"
+              echo "[Instana init] agent jar copied: $DST"
+            else
+              echo "[Instana init] WARNING: agent jar not found at $SRC — traces disabled"
+            fi
+        volumeMounts:
+        - name: instana-agent-jar
+          mountPath: /instana
+        - name: instana-agent-repo
+          mountPath: /opt/instana/agent/data/repo
+          readOnly: true
       containers:
       - name: backend
         image: tesla-backend
@@ -62,6 +87,9 @@ spec:
           value: "tesla-canary"
         - name: INSTANA_TAGS
           value: "app=tesla,deployment=canary,component=backend"
+        volumeMounts:
+        - name: instana-agent-jar
+          mountPath: /instana
         resources:
           requests:
             memory: "512Mi"
@@ -83,6 +111,13 @@ spec:
           initialDelaySeconds: 30
           periodSeconds: 5
           timeoutSeconds: 3
+      volumes:
+      - name: instana-agent-jar
+        emptyDir: {}
+      - name: instana-agent-repo
+        hostPath:
+          path: /opt/instana/agent/data/repo
+          type: Directory
   strategy:
     canary:
       steps:
