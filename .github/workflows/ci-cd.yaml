@@ -10,54 +10,309 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/tesla-canary-app
+  # ── Instana OTel: direct OTLP/HTTP from runner, no collector ──────────────
+  INSTANA_OTLP_ENDPOINT: https://release-instana.instana.rocks
+  INSTANA_PLUGIN_NAME: otel-sensorsdk-cicd
+  DEPLOYMENT_ENVIRONMENT: dev
 
 jobs:
-  build-and-push:
+  # ─── Generate stable trace/run IDs shared across all jobs ─────────────────
+  pipeline-init:
+    runs-on: ubuntu-latest
+    outputs:
+      pipeline_trace_id: ${{ steps.ids.outputs.pipeline_trace_id }}
+      pipeline_span_id:  ${{ steps.ids.outputs.pipeline_span_id }}
+      pipeline_run_id:   ${{ steps.ids.outputs.pipeline_run_id }}
+      start_time_ns:     ${{ steps.ids.outputs.start_time_ns }}
+      backend_version:   ${{ steps.ver.outputs.backend_version }}
+      frontend_version:  ${{ steps.ver.outputs.frontend_version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract versions
+        id: ver
+        run: |
+          BACKEND_VERSION=$(grep -oP '<version>\K[^<]+' backend/pom.xml | head -1)
+          FRONTEND_VERSION=$(grep -oP '"version":\s*"\K[^"]+' frontend/package.json)
+          echo "backend_version=${BACKEND_VERSION}"   >> $GITHUB_OUTPUT
+          echo "frontend_version=${FRONTEND_VERSION}" >> $GITHUB_OUTPUT
+          echo "Backend version:  ${BACKEND_VERSION}"
+          echo "Frontend version: ${FRONTEND_VERSION}"
+
+      # One trace ID ties every span from every job into a single pipeline trace
+      - name: Generate OTel IDs
+        id: ids
+        run: |
+          TRACE_ID=$(openssl rand -hex 16)
+          SPAN_ID=$(openssl rand -hex 8)
+          RUN_ID="${{ github.run_id }}-${{ github.run_attempt }}"
+          START_NS=$(date +%s%N)
+          echo "pipeline_trace_id=${TRACE_ID}" >> $GITHUB_OUTPUT
+          echo "pipeline_span_id=${SPAN_ID}"   >> $GITHUB_OUTPUT
+          echo "pipeline_run_id=${RUN_ID}"     >> $GITHUB_OUTPUT
+          echo "start_time_ns=${START_NS}"      >> $GITHUB_OUTPUT
+          echo "Trace ID: ${TRACE_ID}"
+          echo "Run  ID: ${RUN_ID}"
+
+  # ─── Build & push backend ──────────────────────────────────────────────────
+  build-backend:
+    needs: pipeline-init
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    
-    strategy:
-      matrix:
-        component: [backend, frontend]
-    
+    env:
+      OTEL_SERVICE_NAME:   tesla-backend
+      OTEL_TRACE_ID:       ${{ needs.pipeline-init.outputs.pipeline_trace_id }}
+      OTEL_PARENT_SPAN_ID: ${{ needs.pipeline-init.outputs.pipeline_span_id }}
+    outputs:
+      outcome: ${{ steps.result.outputs.outcome }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
+      - name: OTel — start checkout span
+        id: span_checkout
+        run: |
+          echo "span_id=$(openssl rand -hex 8)" >> $GITHUB_OUTPUT
+          echo "start_ns=$(date +%s%N)"          >> $GITHUB_OUTPUT
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Extract version
-        id: version
+
+      - name: OTel — end checkout span
+        if: always()
+        env:
+          INSTANA_AGENT_KEY: ${{ secrets.INSTANA_AGENT_KEY }}
         run: |
-          if [ "${{ matrix.component }}" == "backend" ]; then
-            VERSION=$(grep -oP '<version>\K[^<]+' ${{ matrix.component }}/pom.xml | head -1)
-          else
-            VERSION=$(grep -oP '"version":\s*"\K[^"]+' ${{ matrix.component }}/package.json)
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Building version: $VERSION"
-      
-      - name: Build and push Docker image
+          bash .github/scripts/otel_send_span.sh \
+            "$OTEL_TRACE_ID" \
+            "${{ steps.span_checkout.outputs.span_id }}" \
+            "$OTEL_PARENT_SPAN_ID" \
+            "checkout" \
+            "${{ steps.span_checkout.outputs.start_ns }}" \
+            "$(date +%s%N)" \
+            "1" "success" "$OTEL_SERVICE_NAME" \
+            "${{ needs.pipeline-init.outputs.pipeline_run_id }}" \
+            "${{ needs.pipeline-init.outputs.backend_version }}" \
+            "${{ github.sha }}" "${{ github.ref_name }}" \
+            "${{ github.server_url }}/${{ github.repository }}"
+
+      - name: OTel — start build span
+        id: span_build
+        run: |
+          echo "span_id=$(openssl rand -hex 8)" >> $GITHUB_OUTPUT
+          echo "start_ns=$(date +%s%N)"          >> $GITHUB_OUTPUT
+
+      - name: Build and push backend image
+        id: docker_build
         uses: docker/build-push-action@v5
         with:
-          context: ./${{ matrix.component }}
+          context: ./backend
           push: true
           tags: |
-            ${{ env.IMAGE_PREFIX }}/${{ matrix.component }}:${{ steps.version.outputs.version }}
-            ${{ env.IMAGE_PREFIX }}/${{ matrix.component }}:latest
+            ${{ env.IMAGE_PREFIX }}/backend:${{ needs.pipeline-init.outputs.backend_version }}
+            ${{ env.IMAGE_PREFIX }}/backend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
-      
+
+      - name: OTel — end build span
+        if: always()
+        env:
+          INSTANA_AGENT_KEY: ${{ secrets.INSTANA_AGENT_KEY }}
+        run: |
+          STATUS_CODE=$([[ "${{ steps.docker_build.outcome }}" == "success" ]] && echo 1 || echo 2)
+          bash .github/scripts/otel_send_span.sh \
+            "$OTEL_TRACE_ID" \
+            "${{ steps.span_build.outputs.span_id }}" \
+            "$OTEL_PARENT_SPAN_ID" \
+            "build-backend" \
+            "${{ steps.span_build.outputs.start_ns }}" \
+            "$(date +%s%N)" \
+            "${STATUS_CODE}" "${{ steps.docker_build.outcome }}" "$OTEL_SERVICE_NAME" \
+            "${{ needs.pipeline-init.outputs.pipeline_run_id }}" \
+            "${{ needs.pipeline-init.outputs.backend_version }}" \
+            "${{ github.sha }}" "${{ github.ref_name }}" \
+            "${{ github.server_url }}/${{ github.repository }}"
+
+      - name: Set outcome
+        id: result
+        if: always()
+        run: echo "outcome=${{ job.status }}" >> $GITHUB_OUTPUT
+
+  # ─── Build & push frontend ─────────────────────────────────────────────────
+  build-frontend:
+    needs: pipeline-init
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      OTEL_SERVICE_NAME:   tesla-frontend
+      OTEL_TRACE_ID:       ${{ needs.pipeline-init.outputs.pipeline_trace_id }}
+      OTEL_PARENT_SPAN_ID: ${{ needs.pipeline-init.outputs.pipeline_span_id }}
+    outputs:
+      outcome: ${{ steps.result.outputs.outcome }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: OTel — start checkout span
+        id: span_checkout
+        run: |
+          echo "span_id=$(openssl rand -hex 8)" >> $GITHUB_OUTPUT
+          echo "start_ns=$(date +%s%N)"          >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: OTel — end checkout span
+        if: always()
+        env:
+          INSTANA_AGENT_KEY: ${{ secrets.INSTANA_AGENT_KEY }}
+        run: |
+          bash .github/scripts/otel_send_span.sh \
+            "$OTEL_TRACE_ID" \
+            "${{ steps.span_checkout.outputs.span_id }}" \
+            "$OTEL_PARENT_SPAN_ID" \
+            "checkout" \
+            "${{ steps.span_checkout.outputs.start_ns }}" \
+            "$(date +%s%N)" \
+            "1" "success" "$OTEL_SERVICE_NAME" \
+            "${{ needs.pipeline-init.outputs.pipeline_run_id }}" \
+            "${{ needs.pipeline-init.outputs.frontend_version }}" \
+            "${{ github.sha }}" "${{ github.ref_name }}" \
+            "${{ github.server_url }}/${{ github.repository }}"
+
+      - name: OTel — start build span
+        id: span_build
+        run: |
+          echo "span_id=$(openssl rand -hex 8)" >> $GITHUB_OUTPUT
+          echo "start_ns=$(date +%s%N)"          >> $GITHUB_OUTPUT
+
+      - name: Build and push frontend image
+        id: docker_build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}/frontend:${{ needs.pipeline-init.outputs.frontend_version }}
+            ${{ env.IMAGE_PREFIX }}/frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+      - name: OTel — end build span
+        if: always()
+        env:
+          INSTANA_AGENT_KEY: ${{ secrets.INSTANA_AGENT_KEY }}
+        run: |
+          STATUS_CODE=$([[ "${{ steps.docker_build.outcome }}" == "success" ]] && echo 1 || echo 2)
+          bash .github/scripts/otel_send_span.sh \
+            "$OTEL_TRACE_ID" \
+            "${{ steps.span_build.outputs.span_id }}" \
+            "$OTEL_PARENT_SPAN_ID" \
+            "build-frontend" \
+            "${{ steps.span_build.outputs.start_ns }}" \
+            "$(date +%s%N)" \
+            "${STATUS_CODE}" "${{ steps.docker_build.outcome }}" "$OTEL_SERVICE_NAME" \
+            "${{ needs.pipeline-init.outputs.pipeline_run_id }}" \
+            "${{ needs.pipeline-init.outputs.frontend_version }}" \
+            "${{ github.sha }}" "${{ github.ref_name }}" \
+            "${{ github.server_url }}/${{ github.repository }}"
+
+      - name: Set outcome
+        id: result
+        if: always()
+        run: echo "outcome=${{ job.status }}" >> $GITHUB_OUTPUT
+
+  # ─── Emit root pipeline span + DORA metrics ───────────────────────────────
+  # Always runs — closes the trace and sends DORA counters regardless of
+  # whether build jobs succeeded, failed, or were skipped.
+  otel-finalize:
+    needs: [pipeline-init, build-backend, build-frontend]
+    if: always()
+    runs-on: ubuntu-latest
+    env:
+      OTEL_TRACE_ID:      ${{ needs.pipeline-init.outputs.pipeline_trace_id }}
+      OTEL_ROOT_SPAN_ID:  ${{ needs.pipeline-init.outputs.pipeline_span_id }}
+      PIPELINE_START_NS:  ${{ needs.pipeline-init.outputs.start_time_ns }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Derive overall pass/fail from upstream job results.
+      # 'skipped' means the component was not built — treat as success.
+      - name: Resolve pipeline status
+        id: status
+        run: |
+          BACKEND="${{ needs.build-backend.result }}"
+          FRONTEND="${{ needs.build-frontend.result }}"
+          if [[ "$BACKEND" == "failure" || "$FRONTEND" == "failure" ]]; then
+            echo "overall=failure" >> $GITHUB_OUTPUT
+            echo "status_code=2"   >> $GITHUB_OUTPUT
+          else
+            echo "overall=success" >> $GITHUB_OUTPUT
+            echo "status_code=1"   >> $GITHUB_OUTPUT
+          fi
+
+      # ── Close the root pipeline span (same span_id opened in pipeline-init)
+      - name: OTel — emit root pipeline span
+        env:
+          INSTANA_AGENT_KEY: ${{ secrets.INSTANA_AGENT_KEY }}
+        run: |
+          bash .github/scripts/otel_send_span.sh \
+            "$OTEL_TRACE_ID" \
+            "$OTEL_ROOT_SPAN_ID" \
+            "" \
+            "pipeline-run" \
+            "$PIPELINE_START_NS" \
+            "$(date +%s%N)" \
+            "${{ steps.status.outputs.status_code }}" \
+            "${{ steps.status.outputs.overall }}" \
+            "tesla-backend" \
+            "${{ needs.pipeline-init.outputs.pipeline_run_id }}" \
+            "${{ needs.pipeline-init.outputs.backend_version }}" \
+            "${{ github.sha }}" "${{ github.ref_name }}" \
+            "${{ github.server_url }}/${{ github.repository }}"
+
+      # ── DORA OTel metrics ─────────────────────────────────────────────────
+      - name: OTel — emit DORA metrics
+        env:
+          INSTANA_AGENT_KEY: ${{ secrets.INSTANA_AGENT_KEY }}
+        run: |
+          END_NS=$(date +%s%N)
+          DURATION_S=$(( (END_NS - PIPELINE_START_NS) / 1000000000 ))
+          PIPELINE_STATUS="${{ steps.status.outputs.overall }}"
+          DEPLOY_SUCCESS=$([[ "$PIPELINE_STATUS" == "success" ]] && echo 1 || echo 0)
+          CFR=$([[ "$PIPELINE_STATUS" == "failure" ]] && echo "1.0" || echo "0.0")
+
+          bash .github/scripts/otel_send_metrics.sh \
+            "$OTEL_TRACE_ID" \
+            "${{ needs.pipeline-init.outputs.pipeline_run_id }}" \
+            "tesla-backend" \
+            "$DURATION_S" \
+            "$DEPLOY_SUCCESS" \
+            "$CFR" \
+            "${{ needs.pipeline-init.outputs.backend_version }}" \
+            "${{ github.ref_name }}"
+
       - name: Image digest
-        run: echo "Image pushed successfully"
+        run: echo "Pipeline finalized. Trace ID: $OTEL_TRACE_ID"
