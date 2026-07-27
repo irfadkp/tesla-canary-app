@@ -315,4 +315,4 @@ jobs:
             "${{ github.ref_name }}"
 
       - name: Image digest
-        run: echo "Pipeline finalized. Trace ID: $OTEL_TRACE_ID"
+        run: echo "Pipeline finalized. Trace ID=$OTEL_TRACE_ID"
