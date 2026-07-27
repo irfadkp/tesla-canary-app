@@ -46,7 +46,7 @@ COMMIT_SHA="${12:-}"
 REF_NAME="${13:-}"
 REPO_URL="${14:-}"
 
-ENDPOINT="${INSTANA_OTLP_ENDPOINT:-https://release-instana.instana.rocks}"
+ENDPOINT="${INSTANA_OTLP_ENDPOINT:-https://otlp-grpc-orange-saas.instana.io:443}"
 PLUGIN_NAME="${INSTANA_PLUGIN_NAME:-otel-sensorsdk-cicd}"
 ENVIRONMENT="${DEPLOYMENT_ENVIRONMENT:-dev}"
 
@@ -118,6 +118,8 @@ EOF
 
 echo "[otel_send_span] Sending span '${SPAN_NAME}' (trace=${TRACE_ID}, span=${SPAN_ID}) to Instana"
 
+# OTLP/HTTP JSON — works against gRPC-TLS endpoints via the OTLP HTTP path.
+# The Instana SaaS endpoint accepts OTLP/HTTP on port 443 at /otlp/v1/traces.
 HTTP_STATUS=$(curl --silent --output /dev/stderr --write-out "%{http_code}" \
   -X POST "${ENDPOINT}/otlp/v1/traces" \
   -H "Content-Type: application/json" \

@@ -33,7 +33,7 @@ CFR="${6}"               # 0.0 or 1.0
 IMAGE_TAG="${7:-}"
 REF_NAME="${8:-}"
 
-ENDPOINT="${INSTANA_OTLP_ENDPOINT:-https://release-instana.instana.rocks}"
+ENDPOINT="${INSTANA_OTLP_ENDPOINT:-https://otlp-grpc-orange-saas.instana.io:443}"
 PLUGIN_NAME="${INSTANA_PLUGIN_NAME:-otel-sensorsdk-cicd}"
 ENVIRONMENT="${DEPLOYMENT_ENVIRONMENT:-dev}"
 NOW_NS=$(date +%s%N)
@@ -132,6 +132,7 @@ EOF
 
 echo "[otel_send_metrics] Sending DORA metrics for run ${PIPELINE_RUN_ID} to Instana"
 
+# OTLP/HTTP JSON — works against gRPC-TLS endpoints via the OTLP HTTP path.
 HTTP_STATUS=$(curl --silent --output /dev/stderr --write-out "%{http_code}" \
   -X POST "${ENDPOINT}/otlp/v1/metrics" \
   -H "Content-Type: application/json" \
