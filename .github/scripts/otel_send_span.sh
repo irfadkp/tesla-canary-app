@@ -61,16 +61,17 @@ fi
 attr_str() { echo "{ \"key\": \"$1\", \"value\": { \"stringValue\": \"$2\" } }"; }
 
 ATTRIBUTES=$(cat <<EOF
-$(attr_str "instana.plugin.name"   "$PLUGIN_NAME"),
-$(attr_str "cicd.pipeline.name"    "tesla-app-cicd"),
-$(attr_str "cicd.pipeline.run.id"  "$PIPELINE_RUN_ID"),
-$(attr_str "cicd.stage.name"       "$SPAN_NAME"),
-$(attr_str "cicd.tool"             "github-actions"),
-$(attr_str "cicd.image.tag"        "$IMAGE_TAG"),
-$(attr_str "cicd.commit.sha"       "$COMMIT_SHA"),
-$(attr_str "cicd.repo.ref"         "$REF_NAME"),
-$(attr_str "cicd.repo.url"         "$REPO_URL"),
-$(attr_str "deployment.environment" "$ENVIRONMENT")
+$(attr_str "cicd.pipeline.name"        "tesla-app-cicd"),
+$(attr_str "cicd.pipeline.run.id"      "$PIPELINE_RUN_ID"),
+$(attr_str "cicd.pipeline.run.state"   "executing"),
+$(attr_str "cicd.pipeline.result"      "$STATUS_MSG"),
+$(attr_str "vcs.ref.head.name"         "$REF_NAME"),
+$(attr_str "vcs.ref.head.type"         "branch"),
+$(attr_str "vcs.repository.url.full"   "$REPO_URL"),
+$(attr_str "vcs.repository.name"       "tesla-canary-app"),
+$(attr_str "vcs.owner.name"            "irfadkp"),
+$(attr_str "vcs.provider.name"         "github"),
+$(attr_str "deployment.environment"    "$ENVIRONMENT")
 EOF
 )
 
@@ -81,10 +82,9 @@ PAYLOAD=$(cat <<EOF
       "resource": {
         "attributes": [
           $(attr_str "service.name"           "$SERVICE_NAME"),
-          $(attr_str "instana.plugin.name"    "$PLUGIN_NAME"),
           $(attr_str "deployment.environment" "$ENVIRONMENT"),
-          $(attr_str "cicd.tool"              "github-actions"),
-          $(attr_str "cicd.pipeline.name"     "tesla-app-cicd")
+          $(attr_str "cicd.pipeline.name"     "tesla-app-cicd"),
+          $(attr_str "service.namespace"      "tesla-shop")
         ]
       },
       "scopeSpans": [

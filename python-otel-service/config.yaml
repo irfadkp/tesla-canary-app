@@ -1,0 +1,30 @@
+opentelemetry:
+  service_name: "tesla-backend"
+  service_version: "1.0.0"
+
+  otlp:
+    http:
+      enabled: false
+      endpoint: "http://10.43.10.105:4318"
+      headers: {}
+      timeout: 10
+
+    grpc:
+      enabled: true
+      endpoint: "otlp-grpc-orange-saas.instana.io:443"
+      headers:
+        x-instana-key: "uBp4GXpZQpKrHxMXNcvInQ"
+        x-instana-host: "tesla-cicd-vm"
+      timeout: 10
+      insecure: false
+
+  metrics:
+    export_interval_millis: 20000
+    export_timeout_millis: 30000
+
+  resource_attributes:
+    deployment.environment: "dev"
+    service.namespace: "tesla-shop"
+    service.instance.id: "tesla-backend-python"
+    hostname: "tesla-cicd-vm"
+    entity.label.attribute: "tesla-backend python demo"
