@@ -10,8 +10,9 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/tesla-canary-app
-  # ── Instana OTel: direct OTLP/gRPC from runner, no collector ──────────────
-  INSTANA_OTLP_ENDPOINT: https://otlp-grpc-orange-saas.instana.io:443
+  # ── Instana OTel: direct OTLP/HTTP from runner, no collector ─────────────
+  # otlp-grpc-* is pure gRPC (protobuf only). Use otlp-orange-saas for HTTP+JSON.
+  INSTANA_OTLP_ENDPOINT: https://otlp-orange-saas.instana.io
   INSTANA_PLUGIN_NAME: otel-sensorsdk-cicd
   DEPLOYMENT_ENVIRONMENT: dev
 
