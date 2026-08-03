@@ -7,7 +7,7 @@
 
     <groupId>com.ferrari</groupId>
     <artifactId>ferrari-backend</artifactId>
-    <version>1.0.9</version>
+    <version>1.0.10</version>
     <packaging>jar</packaging>
 
     <name>Ferrari Backend Service</name>
