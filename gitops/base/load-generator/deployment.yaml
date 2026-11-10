@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tesla-load-generator
+  labels:
+    app: tesla-load-generator
+    component: load-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tesla-load-generator
+  template:
+    metadata:
+      labels:
+        app: tesla-load-generator
+        component: load-generator
+        admission.datadoghq.com/enabled: "false"
+    spec:
+      containers:
+      - name: load-generator
+        image: curlimages/curl:8.10.1
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Tesla load generator started"
+          while true; do
+            # via frontend (nginx proxy -> backend)
+            curl -s -o /dev/null -m 5 http://tesla-frontend/
+            curl -s -o /dev/null -m 5 http://tesla-frontend/api/vehicles
+            curl -s -o /dev/null -m 5 http://tesla-frontend/api/vehicles/stats
+            # direct to backend service (routed through the canary/stable split)
+            curl -s -o /dev/null -m 5 http://tesla-backend:8080/api/vehicles
+            curl -s -o /dev/null -m 5 http://tesla-backend:8080/api/vehicles/1
+            curl -s -o /dev/null -m 5 http://tesla-backend:8080/api/vehicles/stats
+            curl -s -o /dev/null -m 5 http://tesla-backend:8080/health/ready
+            sleep 2
+          done
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "10m"
+          limits:
+            memory: "64Mi"
+            cpu: "100m"
