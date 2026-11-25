@@ -64,6 +64,7 @@ jobs:
   build-backend:
     needs: pipeline-init
     runs-on: ubuntu-latest
+    environment: production
     permissions:
       contents: read
       packages: write
@@ -158,6 +159,7 @@ jobs:
   build-frontend:
     needs: pipeline-init
     runs-on: ubuntu-latest
+    environment: production
     permissions:
       contents: read
       packages: write
